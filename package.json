@@ -6,7 +6,7 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^26.0.1",
-    "mastra": "https://github.com/chiqors/mastra/releases/download/fix-speech-input-browser-fallback/mastra-1.17.0-028ad050db-53c2b92746.tgz"
+    "mastra": "https://github.com/chiqors/mastra/releases/download/fix-speech-input-browser-fallback/mastra-1.17.0-c8afec7458-787500f8d6.tgz"
   },
   "peerDependencies": {
     "typescript": "^6.0.3"
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.4",
-    "@mastra/core": "https://github.com/chiqors/mastra/releases/download/fix-speech-input-browser-fallback/mastra-core-1.48.0-028ad050db-da51a6826a.tgz",
+    "@mastra/core": "https://github.com/chiqors/mastra/releases/download/fix-speech-input-browser-fallback/mastra-core-1.48.0-c8afec7458-b45f6dfe42.tgz",
     "@mastra/duckdb": "^1.5.0",
     "@mastra/evals": "^1.5.0",
     "@mastra/libsql": "^1.14.2",
