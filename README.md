@@ -127,6 +127,93 @@ bun run build
 bun run start
 ```
 
+## Using your Mastra fork
+
+This starter can use fork-built Mastra tarballs from either:
+
+- local `.tgz` files in `.local-packs`
+- GitHub release assets from your Mastra fork
+
+### Pack fork tarballs locally
+
+By default, the helper script reads from `../mastra`:
+
+```sh
+bun run mastra:release-fork
+```
+
+This packs fresh tarballs into `.local-packs`.
+
+If your fork lives somewhere else:
+
+```sh
+MASTRA_FORK_DIR=/absolute/path/to/mastra bun run mastra:release-fork
+```
+
+Then point this starter back to local tarballs:
+
+```sh
+bun run mastra:deps:local
+bun install
+```
+
+### Upload tarballs to a GitHub release
+
+To upload the packed tarballs to your fork's GitHub release assets:
+
+```sh
+MASTRA_RELEASE_TAG=fix-composer-model-picker-hydration \
+MASTRA_GITHUB_REPO=chiqors/mastra \
+bun run mastra:release-fork -- --upload
+```
+
+That creates or updates a release and uploads:
+
+- `mastra-<version>.tgz`
+- `mastra-core-<version>.tgz`
+
+### Use GitHub release assets as dependencies
+
+After uploading release assets:
+
+```sh
+MASTRA_RELEASE_TAG=fix-composer-model-picker-hydration \
+MASTRA_GITHUB_REPO=chiqors/mastra \
+bun run mastra:deps:release
+
+bun install
+```
+
+This updates `package.json` to download `mastra` and `@mastra/core` directly from your fork's GitHub release assets.
+
+Recommended verification:
+
+```sh
+bun run build
+```
+
+The release-based dependency flow has been verified in this starter with Bun.
+
+### Update to newer fork code
+
+When your fork branch changes:
+
+1. sync or rebuild the fork in `../mastra`
+2. run:
+
+```sh
+bun run mastra:release-fork
+bun run mastra:deps:local
+bun install
+```
+
+Or, if you're using GitHub release assets:
+
+```sh
+MASTRA_RELEASE_TAG=<new-tag> bun run mastra:deps:release
+bun install
+```
+
 ## Project structure
 
 ```text

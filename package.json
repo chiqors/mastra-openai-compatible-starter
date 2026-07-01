@@ -6,7 +6,7 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^26.0.1",
-    "mastra": "file:.local-packs/mastra-1.17.0-alpha.10.tgz"
+    "mastra": "https://github.com/chiqors/mastra/releases/download/fix-composer-model-picker-hydration/mastra-1.17.0.tgz"
   },
   "peerDependencies": {
     "typescript": "^6.0.3"
@@ -17,11 +17,14 @@
   "scripts": {
     "dev": "mastra dev",
     "build": "mastra build",
-    "start": "mastra start"
+    "start": "mastra start",
+    "mastra:release-fork": "node scripts/release-mastra-fork.mjs",
+    "mastra:deps:local": "node scripts/update-mastra-deps.mjs --mode=local",
+    "mastra:deps:release": "node scripts/update-mastra-deps.mjs --mode=release"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.4",
-    "@mastra/core": "file:.local-packs/mastra-core-1.48.0-alpha.10.tgz",
+    "@mastra/core": "https://github.com/chiqors/mastra/releases/download/fix-composer-model-picker-hydration/mastra-core-1.48.0.tgz",
     "@mastra/duckdb": "^1.5.0",
     "@mastra/evals": "^1.5.0",
     "@mastra/libsql": "^1.14.2",
