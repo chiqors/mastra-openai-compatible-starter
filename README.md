@@ -22,7 +22,7 @@ This repo shows how to:
 ## Requirements
 
 - Bun
-- Node.js `>=22.13.0`
+- Node.js `>=24.13.0`
 - An OpenAI-compatible API server
 
 ## Quick start
