@@ -32,6 +32,7 @@ export const readPdfTool = createTool({
     warnings: z.array(z.string()),
   }),
   execute: async ({ filePath }) => {
+    console.info(`[read-pdf tool] Invoked for ${filePath}`);
     return await readPdfFile(filePath);
   },
 });

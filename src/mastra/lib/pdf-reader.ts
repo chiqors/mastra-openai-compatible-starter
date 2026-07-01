@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 export type PdfSection = {
@@ -157,19 +158,8 @@ function extractWithSwiftPdfKit(filePath: string): SwiftPdfPayload {
   return JSON.parse(result.stdout) as SwiftPdfPayload;
 }
 
-export async function readPdfFile(filePath: string): Promise<PdfReadResult> {
-  const resolvedPath = path.resolve(filePath);
-
-  if (!existsSync(resolvedPath)) {
-    throw new Error(`File not found: ${resolvedPath}`);
-  }
-
-  if (path.extname(resolvedPath).toLowerCase() !== '.pdf') {
-    throw new Error(`Expected a .pdf file: ${resolvedPath}`);
-  }
-
+function buildPdfReadResult(filePath: string, extracted: SwiftPdfPayload): PdfReadResult {
   const warnings: string[] = [];
-  const extracted = extractWithSwiftPdfKit(resolvedPath);
   const text = extracted.text.trim();
 
   if (!text) {
@@ -177,7 +167,7 @@ export async function readPdfFile(filePath: string): Promise<PdfReadResult> {
   }
 
   return {
-    filePath: resolvedPath,
+    filePath,
     text,
     sections: summarizeSections(text),
     metadata: {
@@ -194,4 +184,30 @@ export async function readPdfFile(filePath: string): Promise<PdfReadResult> {
     },
     warnings,
   };
+}
+
+export function readPdfBytes(data: Uint8Array, filename = 'attachment.pdf'): PdfReadResult {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'mastra-pdf-'));
+  const tempPath = path.join(tempDir, filename.endsWith('.pdf') ? filename : `${filename}.pdf`);
+
+  try {
+    writeFileSync(tempPath, data);
+    return buildPdfReadResult(tempPath, extractWithSwiftPdfKit(tempPath));
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+export async function readPdfFile(filePath: string): Promise<PdfReadResult> {
+  const resolvedPath = path.resolve(filePath);
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`File not found: ${resolvedPath}`);
+  }
+
+  if (path.extname(resolvedPath).toLowerCase() !== '.pdf') {
+    throw new Error(`Expected a .pdf file: ${resolvedPath}`);
+  }
+
+  return buildPdfReadResult(resolvedPath, extractWithSwiftPdfKit(resolvedPath));
 }

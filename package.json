@@ -6,7 +6,7 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^26.0.1",
-    "mastra": "file:.local-packs/mastra-1.17.0-c8afec7458-47e05d83de.tgz"
+    "mastra": "file:.local-packs/mastra-1.17.0-7ef8a0f0fb-f73dc961e2.tgz"
   },
   "peerDependencies": {
     "typescript": "^6.0.3"
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.4",
-    "@mastra/core": "file:.local-packs/mastra-core-1.48.0-c8afec7458-d319033b6d.tgz",
+    "@mastra/core": "file:.local-packs/mastra-core-1.48.0-7ef8a0f0fb-e7166a7f78.tgz",
     "@mastra/duckdb": "^1.5.0",
     "@mastra/evals": "^1.5.0",
     "@mastra/libsql": "^1.14.2",

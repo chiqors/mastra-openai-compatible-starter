@@ -35,6 +35,7 @@ export const readDocxTool = createTool({
     warnings: z.array(z.string()),
   }),
   execute: async ({ filePath }) => {
+    console.info(`[read-docx tool] Invoked for ${filePath}`);
     return await readDocxFile(filePath);
   },
 });

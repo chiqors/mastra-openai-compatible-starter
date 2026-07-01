@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 export type DocxSection = {
@@ -168,4 +169,16 @@ export async function readDocxFile(filePath: string): Promise<DocxReadResult> {
     },
     warnings,
   };
+}
+
+export async function readDocxBytes(data: Uint8Array, filename = 'attachment.docx'): Promise<DocxReadResult> {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'mastra-docx-'));
+  const tempPath = path.join(tempDir, filename.endsWith('.docx') ? filename : `${filename}.docx`);
+
+  try {
+    writeFileSync(tempPath, data);
+    return await readDocxFile(tempPath);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
 }
