@@ -1,5 +1,5 @@
 import { MastraModelGateway, type AttachmentCapabilities, type ProviderConfig } from '@mastra/core/llm';
-import { createOpenAI } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { LanguageModelV4CallOptions } from '@ai-sdk/provider';
 import {
   customOpenAIBaseUrl,
@@ -139,11 +139,12 @@ export class CustomOpenAIGateway extends MastraModelGateway {
     apiKey: string;
     headers?: Record<string, string>;
   }) {
-    const model = createOpenAI({
+    const model = createOpenAICompatible({
+      name: customOpenAIProviderId,
       apiKey,
       baseURL: this.buildUrl(),
       headers,
-    }).chat(modelId);
+    }).languageModel(modelId);
 
     return {
       ...model,

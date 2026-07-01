@@ -23,7 +23,7 @@
     "mastra:deps:release": "node scripts/update-mastra-deps.mjs --mode=release"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^4.0.4",
+    "@ai-sdk/openai-compatible": "^3.0.2",
     "@mastra/core": "file:.local-packs/mastra-core-1.48.1-alpha.0-d637a7a208-13bd9abf3c.tgz",
     "@mastra/duckdb": "^1.5.0",
     "@mastra/evals": "^1.5.0",
