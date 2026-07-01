@@ -18,7 +18,7 @@ Your primary function is to help users get weather details for specific location
 - If the user asks for activities and provides the weather forecast, suggest activities based on the weather forecast.
 - If the user asks for activities, respond in the format they request.
 
-Use the weatherTool to fetch current weather data.`,
+  Use the weatherTool to fetch current weather data.`,
   model: customOpenAIDefaultModel,
   tools: { weatherTool },
   scorers: {

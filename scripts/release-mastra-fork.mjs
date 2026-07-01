@@ -138,6 +138,7 @@ console.log(`Commit: ${currentCommit}`);
 console.log(`pnpm: ${[pnpmCommand, ...pnpmPrefixArgs].join(' ')}`);
 
 console.log('\nBuilding fork packages needed for Studio...');
+run(pnpmCommand, [...pnpmPrefixArgs, '--filter', './packages/core', 'build:lib'], mastraRepo);
 run(pnpmCommand, [...pnpmPrefixArgs, '--filter', '@internal/playground', 'build'], mastraRepo);
 run(pnpmCommand, [...pnpmPrefixArgs, '--filter', './packages/cli', 'build:lib'], mastraRepo);
 
