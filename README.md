@@ -119,6 +119,14 @@ Behavior:
 - caches results in memory for `CUSTOM_OPENAI_MODEL_CACHE_TTL_MS`
 - falls back to `gpt-5.4` if the endpoint is temporarily unavailable
 
+## Voice
+
+By default, the sample agent does not configure a Mastra voice provider, so Studio uses browser speech recognition as a fallback.
+
+If you want to switch the agent to a Mastra-managed voice provider such as `OpenAIVoice`, see:
+
+- [Voice setup](docs/voice.md)
+
 ## Scripts
 
 ```sh
