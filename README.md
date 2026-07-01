@@ -144,6 +144,12 @@ bun run mastra:release-fork
 
 This packs fresh tarballs into `.local-packs`.
 
+The local pack helper now:
+
+- rebuilds the Studio bundle before packing
+- writes content-hashed tarball filenames so Bun does not reuse stale local packages
+- writes `.local-packs/mastra-fork-manifest.json` so `mastra:deps:local` can resolve the newest files automatically
+
 If your fork lives somewhere else:
 
 ```sh
@@ -169,8 +175,10 @@ bun run mastra:release-fork -- --upload
 
 That creates or updates a release and uploads:
 
-- `mastra-<version>.tgz`
-- `mastra-core-<version>.tgz`
+- `mastra-<version>-<commit>-<hash>.tgz`
+- `mastra-core-<version>-<commit>-<hash>.tgz`
+
+These hashed asset names are intentional. They prevent stale package reuse and let the starter install the exact fork build you just published.
 
 ### Use GitHub release assets as dependencies
 
@@ -185,6 +193,8 @@ bun install
 ```
 
 This updates `package.json` to download `mastra` and `@mastra/core` directly from your fork's GitHub release assets.
+
+The release helper resolves the actual asset names from the GitHub release metadata, so it can safely pick the newest hashed tarballs instead of older static asset names.
 
 Recommended verification:
 
@@ -210,9 +220,13 @@ bun install
 Or, if you're using GitHub release assets:
 
 ```sh
-MASTRA_RELEASE_TAG=<new-tag> bun run mastra:deps:release
+MASTRA_RELEASE_TAG=<new-tag> \
+MASTRA_GITHUB_REPO=<owner>/<repo> \
+bun run mastra:deps:release
 bun install
 ```
+
+If you reuse the same release tag, re-run both commands after uploading updated assets so `package.json` and `bun.lock` point at the latest tarballs for that tag.
 
 ## Project structure
 
@@ -231,6 +245,7 @@ src/mastra/
 - Bun automatically loads `.env`
 - local observability data may create `*.duckdb` and `*.duckdb.wal` files
 - those DuckDB files are gitignored in this repo
+- `.local-packs/mastra-fork-manifest.json` is local build metadata and is gitignored
 
 ## Learn more
 
