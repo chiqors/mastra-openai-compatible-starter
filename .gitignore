@@ -42,5 +42,6 @@ dist
 *.db-*
 *.duckdb
 *.duckdb.wal
+.local-packs/*.json
 .netlify
 .vercel

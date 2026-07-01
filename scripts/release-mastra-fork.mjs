@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const repoRoot = resolve(process.cwd());
 const mastraRepo = resolve(process.env.MASTRA_FORK_DIR || '../mastra');
@@ -15,8 +16,8 @@ const upload = process.env.MASTRA_RELEASE_UPLOAD === '1' || process.argv.include
 const githubRepo = process.env.MASTRA_GITHUB_REPO || 'chiqors/mastra';
 
 const packagesToPack = [
-  { filter: './packages/core', filename: 'mastra-core-1.48.0.tgz' },
-  { filter: './packages/cli', filename: 'mastra-1.17.0.tgz' },
+  { filter: './packages/core', baseFilename: 'mastra-core-1.48.0' },
+  { filter: './packages/cli', baseFilename: 'mastra-1.17.0' },
 ];
 
 function canRun(command, args = []) {
@@ -71,6 +72,10 @@ function detectPnpmCommand() {
 }
 
 const [pnpmCommand, pnpmPrefixArgs] = detectPnpmCommand();
+
+function shortHashForFile(filePath) {
+  return createHash('sha256').update(readFileSync(filePath)).digest('hex').slice(0, 10);
+}
 
 function run(command, args, cwd, extraEnv = {}) {
   const result = spawnSync(command, args, {
@@ -132,11 +137,29 @@ console.log(`Branch: ${currentBranch}`);
 console.log(`Commit: ${currentCommit}`);
 console.log(`pnpm: ${[pnpmCommand, ...pnpmPrefixArgs].join(' ')}`);
 
-for (const { filter } of packagesToPack) {
+console.log('\nBuilding fork packages needed for Studio...');
+run(pnpmCommand, [...pnpmPrefixArgs, '--filter', '@internal/playground', 'build'], mastraRepo);
+run(pnpmCommand, [...pnpmPrefixArgs, '--filter', './packages/cli', 'build:lib'], mastraRepo);
+
+const packagedFiles = [];
+
+for (const { filter, baseFilename } of packagesToPack) {
   run(pnpmCommand, [...pnpmPrefixArgs, '--filter', filter, 'pack', '--pack-destination', outputDir], mastraRepo);
+
+  const originalFile = join(outputDir, `${baseFilename}.tgz`);
+
+  if (!existsSync(originalFile)) {
+    console.error(`Expected tarball not found after packing: ${originalFile}`);
+    process.exit(1);
+  }
+
+  const contentHash = shortHashForFile(originalFile);
+  const versionedFile = join(outputDir, `${baseFilename}-${currentCommit}-${contentHash}.tgz`);
+  renameSync(originalFile, versionedFile);
+  packagedFiles.push({ baseFilename, filename: `${baseFilename}-${currentCommit}-${contentHash}.tgz` });
 }
 
-const tarballs = packagesToPack
+const tarballs = packagedFiles
   .map(({ filename }) => {
     const file = join(outputDir, filename);
     if (!existsSync(file)) {
@@ -151,6 +174,20 @@ console.log('\nPacked tarballs:');
 for (const tarball of tarballs) {
   console.log(`- ${tarball}`);
 }
+
+const manifest = {
+  branch: currentBranch,
+  commit: currentCommit,
+  generatedAt: new Date().toISOString(),
+  packages: {
+    mastra: packagedFiles.find(pkg => pkg.baseFilename === 'mastra-1.17.0')?.filename,
+    '@mastra/core': packagedFiles.find(pkg => pkg.baseFilename === 'mastra-core-1.48.0')?.filename,
+  },
+};
+
+const manifestPath = join(outputDir, 'mastra-fork-manifest.json');
+writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+console.log(`Manifest: ${manifestPath}`);
 
 if (!upload) {
   console.log('\nSkipping GitHub release upload. Re-run with --upload and MASTRA_RELEASE_TAG=<tag> to upload.');
