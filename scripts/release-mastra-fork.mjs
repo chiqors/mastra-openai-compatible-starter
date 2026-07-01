@@ -15,11 +15,6 @@ const releaseTag =
 const upload = process.env.MASTRA_RELEASE_UPLOAD === '1' || process.argv.includes('--upload');
 const githubRepo = process.env.MASTRA_GITHUB_REPO || 'chiqors/mastra';
 
-const packagesToPack = [
-  { filter: './packages/core', baseFilename: 'mastra-core-1.48.0' },
-  { filter: './packages/cli', baseFilename: 'mastra-1.17.0' },
-];
-
 function canRun(command, args = []) {
   const result = spawnSync(command, args, {
     encoding: 'utf8',
@@ -122,6 +117,10 @@ function runCapture(command, args, cwd) {
   return result.stdout.trim();
 }
 
+function readJson(filePath) {
+  return JSON.parse(readFileSync(filePath, 'utf8'));
+}
+
 if (!existsSync(mastraRepo)) {
   console.error(`Mastra fork directory not found: ${mastraRepo}`);
   process.exit(1);
@@ -131,6 +130,13 @@ mkdirSync(outputDir, { recursive: true });
 
 const currentBranch = runCapture('git', ['branch', '--show-current'], mastraRepo);
 const currentCommit = runCapture('git', ['rev-parse', '--short', 'HEAD'], mastraRepo);
+const corePkg = readJson(join(mastraRepo, 'packages/core/package.json'));
+const cliPkg = readJson(join(mastraRepo, 'packages/cli/package.json'));
+
+const packagesToPack = [
+  { filter: './packages/core', packageName: corePkg.name, baseFilename: `mastra-core-${corePkg.version}` },
+  { filter: './packages/cli', packageName: cliPkg.name, baseFilename: `mastra-${cliPkg.version}` },
+];
 
 console.log(`Packing fork from ${mastraRepo}`);
 console.log(`Branch: ${currentBranch}`);
@@ -157,7 +163,8 @@ for (const { filter, baseFilename } of packagesToPack) {
   const contentHash = shortHashForFile(originalFile);
   const versionedFile = join(outputDir, `${baseFilename}-${currentCommit}-${contentHash}.tgz`);
   renameSync(originalFile, versionedFile);
-  packagedFiles.push({ baseFilename, filename: `${baseFilename}-${currentCommit}-${contentHash}.tgz` });
+  const packageName = packagesToPack.find(pkg => pkg.filter === filter)?.packageName;
+  packagedFiles.push({ packageName, baseFilename, filename: `${baseFilename}-${currentCommit}-${contentHash}.tgz` });
 }
 
 const tarballs = packagedFiles
@@ -181,8 +188,8 @@ const manifest = {
   commit: currentCommit,
   generatedAt: new Date().toISOString(),
   packages: {
-    mastra: packagedFiles.find(pkg => pkg.baseFilename === 'mastra-1.17.0')?.filename,
-    '@mastra/core': packagedFiles.find(pkg => pkg.baseFilename === 'mastra-core-1.48.0')?.filename,
+    mastra: packagedFiles.find(pkg => pkg.packageName === 'mastra')?.filename,
+    '@mastra/core': packagedFiles.find(pkg => pkg.packageName === '@mastra/core')?.filename,
   },
 };
 

@@ -37,6 +37,15 @@ function latestMatchingFile(prefix) {
   return candidates[0] || null;
 }
 
+function latestMatchingAnyFile(prefixes) {
+  for (const prefix of prefixes) {
+    const match = latestMatchingFile(prefix);
+    if (match) return match;
+  }
+
+  return null;
+}
+
 function resolveLocalPackageFiles() {
   if (existsSync(manifestPath)) {
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
@@ -49,8 +58,8 @@ function resolveLocalPackageFiles() {
   }
 
   return {
-    mastraFile: latestMatchingFile(`mastra-${cliVersion}-`),
-    coreFile: latestMatchingFile(`mastra-core-${coreVersion}-`),
+    mastraFile: latestMatchingAnyFile([`mastra-${cliVersion}-`, 'mastra-']),
+    coreFile: latestMatchingAnyFile([`mastra-core-${coreVersion}-`, 'mastra-core-']),
     manifestCommit: null,
   };
 }
@@ -91,8 +100,8 @@ async function resolveReleasePackageFiles() {
     return matches[0] || null;
   };
 
-  const mastraAsset = findBestAsset(`mastra-${cliVersion}`);
-  const coreAsset = findBestAsset(`mastra-core-${coreVersion}`);
+  const mastraAsset = findBestAsset(`mastra-${cliVersion}`) || findBestAsset('mastra-');
+  const coreAsset = findBestAsset(`mastra-core-${coreVersion}`) || findBestAsset('mastra-core-');
 
   if (!mastraAsset || !coreAsset) {
     console.error(`Unable to find release tarballs for tag ${releaseTag} in ${githubRepo}.`);
